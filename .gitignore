@@ -1,0 +1,8 @@
+# 克隆的只读 skill 仓库 —— 不进版本控制。
+# 这些仓库由 /sync-skills 根据本仓库 skills/README.md 的 manifest 拉取到本地。
+# 只放行 skills/README.md（manifest 本身），其余 skills/*/ 子目录全部忽略。
+skills/*/
+!skills/README.md
+
+# 杂项
+*.stackdump
