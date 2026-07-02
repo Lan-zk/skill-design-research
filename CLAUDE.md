@@ -43,7 +43,7 @@ git clone <url> skills/<repo>
 git -C skills/<repo> fetch origin && git -C skills/<repo> pull --ff-only
 ```
 
-Run this across all nine repos. Each repo's default branch is usually `main` (a few use `master`, e.g. `ljg-skills`); `git pull --ff-only` follows whatever the checked-out branch tracks. If a repo refuses (local diverge, detached HEAD, etc.), report it and do nothing further there — never reset or force.
+Run this across all repos listed in the manifest. Each repo's default branch is usually `main` (a few use `master`, e.g. `ljg-skills`); `git pull --ff-only` follows whatever the checked-out branch tracks. If a repo refuses (local diverge, detached HEAD, etc.), report it and do nothing further there — never reset or force.
 
 ## Skill anatomy (what you'll be reading)
 
@@ -68,12 +68,14 @@ This converts the read-only policy from a convention into a hard guarantee. The 
 
 ### Skills (user-invocable, `disable-model-invocation: true`)
 
-- **`/sync-skills`** — `.claude/skills/sync-skills/SKILL.md`. Initializes and syncs the 9 repos under `skills/`: clones missing repos (default branch) and fast-forwards existing ones, all read-only. Reads the repo list from `skills/README.md`. Triggered by "拉取最新的" / "pull latest" / "sync repos" / "初始化" / "initialize". Never force/reset/push/commit; on failure it reports and leaves the repo untouched. This is the operational form of the "Initializing & syncing repos" section above — prefer it over running the git loop by hand.
-- **`/skill-anatomy`** — `.claude/skills/skill-anatomy/SKILL.md`. Cross-repo comparison workflow. Captures per-skill frontmatter, verbatim `description` trigger wording, bundled resources, layout, and invocation model; writes the result to `design-docs/comparisons/` using a fixed template. Establishes the `design-docs/` subdirectory convention (`comparisons/`, `summaries/`, `methods/`).
+- **`/sync-skills`** — `.claude/skills/sync-skills/SKILL.md`. Initializes and syncs the repos under `skills/`: clones missing repos (default branch) and fast-forwards existing ones, all read-only. Reads the repo list from `skills/README.md`. Triggered by "拉取最新的" / "pull latest" / "sync repos" / "初始化" / "initialize". Never force/reset/push/commit; on failure it reports and leaves the repo untouched. This is the operational form of the "Initializing & syncing repos" section above — prefer it over running the git loop by hand.
+- **`/add-skill`** — `.claude/skills/add-skill/SKILL.md`. Adds a new repo to the workspace: given a git URL, clones it to `skills/<repo-name>/` (read-only), auto-infers its metadata (author, default branch, SKILL.md location/count, one-line purpose), and appends a row to both tables in `skills/README.md` (the manifest) and bumps the repo count. The write-side companion to `/sync-skills` (which only reads the manifest). Triggered by "新增一个skill" / "add a skill" / "添加仓库" or by the user pasting a git URL to incorporate. Never force/reset/push/commit; leaves committing to the user.
+- **`/skill-anatomy`** — `.claude/skills/skill-anatomy/SKILL.md`. Deep research into how skill repos are designed. Two modes: **single-repo** (one deep-research doc under `design-docs/summaries/`, then adversarially reviewed) or **multi-repo** (one deep-research doc per repo as raw material + one cross-repo synthesis under `design-docs/comparisons/`, with only the synthesis reviewed). Each repo's analysis reaches its **first-principles design assumptions** (not just what patterns it uses, but why the author believes they're right and when they'd fail). All output is written in **Feynman-style plain language** — technical terms allowed but each must be explained so a non-expert can follow; no empty abstractions (赋能/闭环/范式 etc.). Uses `skill-analyzer` to collect raw material and `skill-critic` for the adversarial review pass.
 
-### Subagent — `.claude/agents/skill-analyzer.md` (Claude-invocable)
+### Subagents (Claude-invocable)
 
-Read-only analyst for **one** repo at a time. `tools: Read, Glob, Grep` (no write tools). Returns a structured Markdown summary of every `SKILL.md` in the assigned repo. Use it to fan out one agent per repo in parallel during `/skill-anatomy` comparisons, then synthesize — avoids loading dozens of `SKILL.md` files into the main context.
+- **`skill-analyzer`** — `.claude/agents/skill-analyzer.md`. Read-only raw-material collector for **one** repo at a time. `tools: Read, Glob, Grep`. Returns a structured bundle: per-skill facts (frontmatter, verbatim `description`, bundled resources, layout, invocation model) **plus** repo-level design-philosophy leads (README, agent-integration files, skill-directory organization, trigger-wording house style, progressive-disclosure usage, author's stated philosophy). Fan out one per repo in parallel during `/skill-anatomy`, then synthesize — avoids loading dozens of `SKILL.md` files into the main context.
+- **`skill-critic`** — `.claude/agents/skill-critic.md`. Adversarial reviewer. `tools: Read, Glob, Grep`. Reviews **one** artifact per invocation (a single-repo deep-research doc, or a multi-repo synthesis — never both, never per-repo docs in multi-repo mode). Checks four dimensions: factual accuracy (re-opens source files to verify), first-principles depth, Feynman clarity, and (syntheses only) cross-cutting validity. Returns a structured defect list the writer revises against. Review happens once per run, at the top of the output chain.
 
 ### Where writes are allowed (recap)
 

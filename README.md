@@ -45,7 +45,9 @@
 
 ## 自动化（`.claude/`）
 
-- **`/sync-skills`** — 初始化 + 同步 9 个 skill 仓库（clone if missing / pull --ff-only）。
-- **`/skill-anatomy`** — 跨仓库对比 SKILL.md 的结构、触发词、渐进式披露、布局。
-- **`skill-analyzer` subagent** — 单仓库只读分析，可并行 fan-out。
+- **`/sync-skills`** — 初始化 + 同步 skill 仓库（clone if missing / pull --ff-only）。
+- **`/add-skill`** — 新增一个 skill 仓库：给 git 地址 → clone 到 `skills/<repo>/` → 自动推断元数据 → 更新 `skills/README.md` manifest。
+- **`/skill-anatomy`** — 深度研究 skill 仓库的设计：第一性原理、设计哲学、触发词策略，费曼式通俗表达。单仓库模式审查该仓库报告，多仓库模式只审查综合篇。
+- **`skill-analyzer` subagent** — 单仓库只读素材采集，可并行 fan-out。
+- **`skill-critic` subagent** — 对抗性审查者，审查 skill-anatomy 产出的事实性/第一性原理深度/费曼清晰度。
 - **guard-repos hook** — PreToolUse 拦截对 `skills/<repo>/` 的写入。
