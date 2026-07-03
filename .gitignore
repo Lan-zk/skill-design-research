@@ -6,3 +6,6 @@ skills/*/
 
 # 杂项
 *.stackdump
+
+# 个人本地配置（Claude Code）
+.claude.local.md
