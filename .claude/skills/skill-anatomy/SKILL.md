@@ -126,3 +126,8 @@ This is a hard constraint on every artifact this skill produces, and a primary r
 - The `skill-analyzer` subagent collects raw material; the `skill-critic` subagent reviews. The main agent writes and revises.
 - Don't fabricate. If a repo has no `SKILL.md` or no README, say so explicitly.
 - `design-docs/` subdirectory convention: `summaries/` (per-repo deep research), `comparisons/` (cross-repo synthesis), `methods/` (methodology notes if needed).
+
+## 派发技巧
+
+- **派 skill-critic 时，附上完整仓库列表**（读 `skills/README.md` manifest）。否则 critic 会把对 anthropic-skills / impeccable / gstack 等**同在工作区内**的仓库的引用误判为"不在工作区、不可验证"，产生大量假缺陷。
+- **skill-analyzer 报告的行数常系统性偏小**（trailing newline / `wc -l` 口径差异），视为近似值；critic 会重读源文件核实。涉及精确行数的论断（如"超 500 行"）以 critic 核实为准。
