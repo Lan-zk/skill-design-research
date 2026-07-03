@@ -5,7 +5,7 @@
 > 新增或移除仓库时**只改本文件**，`/sync-skills` 与 guard hook 都据此工作，无需同步别处。
 > 本文件位于 `skills/` 根级，是 workspace 元数据，不属于任何克隆仓库；`skills/<repo>/` 子目录全部由 `.gitignore` 排除，不进版本控制。
 
-仓库总数：**10**
+仓库总数：**12**
 
 ## 仓库表
 
@@ -21,6 +21,8 @@
 | `skills/andrej-karpathy-skills/` | andrej-karpathy-skills | https://github.com/multica-ai/andrej-karpathy-skills.git | multica-ai | main | multica-ai/andrej-karpathy-skills |
 | `skills/impeccable/` | impeccable | https://github.com/pbakaus/impeccable.git | pbakaus | main | pbakaus/impeccable |
 | `skills/anthropic-skills/` | skills | https://github.com/anthropics/skills.git | anthropics | main | anthropics/skills |
+| `skills/ui-ux-pro-max-skill/` | ui-ux-pro-max-skill | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git | nextlevelbuilder | main | nextlevelbuilder/ui-ux-pro-max-skill |
+| `skills/slavingia-skills/` | slavingia-skills | https://github.com/slavingia/skills.git | slavingia | main | slavingia/skills |
 
 ## 拉取规则（hard，初始化与同步共用）
 
@@ -46,5 +48,7 @@
 | andrej-karpathy-skills | `skills/andrej-karpathy-skills/skills/karpathy-guidelines/SKILL.md`（1 个）| multica-ai 的 Karpathy 风格写作指南，单技能 |
 | impeccable | `skills/impeccable/.claude/skills/impeccable/SKILL.md`（多 agent 目录镜像，13 处）| pbakaus 的前端设计技能，按 agent（.claude/.cursor/.agents）分目录镜像 |
 | anthropic-skills | `skills/anthropic-skills/skills/<name>/SKILL.md`（18 个）| Anthropic 官方示例技能集，含创意设计 / 开发测试 / 企业沟通 / 文档生成（docx/pdf/pptx/xlsx），并附 Agent Skills 规范与模板 |
+| ui-ux-pro-max-skill | `skills/ui-ux-pro-max-skill/.claude/skills/<name>/SKILL.md`（7 个，`cli/assets/skills/` 镜像 6 个）| NextLevelBuilder 的 UI/UX 设计智能技能，含 UI 风格 / 配色 / 字体配对 / UX 准则与设计系统生成器，以 Claude Code 插件形式经 npx CLI 跨 19 个 AI 平台分发 |
+| slavingia-skills | `skills/slavingia-skills/skills/<name>/SKILL.md`（10 个）| Sahil Lavingia 的极简创业者技能集，基于其著作《The Minimalist Entrepreneur》，覆盖找社区 / 验证想法 / MVP / 定价 / 营销 / 可持续增长等创业全流程，以 Claude Code 插件形式分发 |
 
 > 各仓库根级常带 agent 集成文件（`CLAUDE.md` / `AGENTS.md` / `GEMINI.md` / `CURSOR.md`），记录其被消费方式，跨仓库对比时值得关注。
