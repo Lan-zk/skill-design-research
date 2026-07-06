@@ -53,6 +53,28 @@ Across these repos, a "skill" is a directory containing a `SKILL.md` with YAML f
 
 Repos also ship agent-integration files at their roots (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `CURSOR.md`) — these document how each project expects to be consumed by different agents and are worth comparing across repos.
 
+### Agent Skills 官方规范基准（agentskills.io）
+
+The canonical standard is cloned at `skills/agentskills/`（agentskills/agentskills，Anthropic 发起、现已开放）——`docs/specification.mdx` 是规范文本，`skills-ref/` 是参考验证器。研究本工作区里的技能仓库时，以此为准绳判断"遵循还是偏离"。严格区分三类，避免把"建议"误读成"强制"（history-docs 里已删除的 3 个 spec 文档就是这个错误）：
+
+**Must（spec 硬性规定，`skills-ref` validator 强制）**
+- 一个技能 = 一个目录 + 一个 `SKILL.md`（YAML frontmatter + Markdown 正文）。
+- frontmatter 必填 `name` + `description`；`name` 1-64 字符、小写字母/数字/连字符、不得开头或结尾或连续连字符、**必须匹配父目录名**；`description` 1-1024 字符、非空。
+- 允许的 top-level 字段仅 6 个（`validator.py` 的 `ALLOWED_FIELDS`）：`name`、`description`、`license`、`compatibility`（≤500 字符）、`metadata`（string→string 任意键值）、`allowed-tools`（实验性）。
+
+**Recommended（建议，非强制；validator 不查）**
+- 渐进式披露三层：metadata（~100 tokens，启动时全技能加载）→ instructions（SKILL.md body，<5000 tokens 建议，激活时加载）→ resources（scripts/references/assets，按需）。
+- `SKILL.md` 主体 < 500 行 / 5000 tokens；超长内容拆进 `references/`。**是建议不是硬规则**——本工作区 gstack（中位数 ~800 行）、anthropic docx 590 行、guizang 541 行、ui-ux-pro-max 704 行都超 500 且合理。
+- 文件引用保持一级深度，避免深层嵌套链。
+- description 应同时说"做什么"+"何时用"，含触发关键词。
+
+**Convention（de facto 约定：实践中普遍使用，spec 未强制）**
+- `.agents/skills/` 是跨客户端技能目录约定（spec 不规定扫描路径，但实现方普遍扫这里）；同名技能 project-level 覆盖 user-level。
+- 不可信仓库的项目级技能应做 trust 门控（防指令注入）——本工作区的 `guard-repos.js` 是写侧信任门控（拦截对克隆仓库的修改），与 spec 的读侧门控互补，机制不同。
+- `disable-model-invocation` 字段被客户端实现指南承认为过滤标志，但**未进 spec 的 `ALLOWED_FIELDS`**——属 provider 扩展。本工作区 mattpocock/impeccable/gstack/ljg 等在 top-level 用了 spec 不认的扩展字段（`disable-model-invocation` / `user-invocable` / `argument-hint` / `version` / `preamble-tier` 等），跨客户端兼容性会受影响。
+
+验证：`skills-ref validate <skill-dir>`（参考实现，README 明确 "not for production"）只验格式不验质量。完整规范见 `skills/agentskills/docs/specification.mdx`，深度研究见 `design-docs/summaries/agentskills-deep-research.md`。
+
 ## Project-level Claude Code configuration
 
 `.claude/` holds automations tailored to this workspace's read-only research workflow.
