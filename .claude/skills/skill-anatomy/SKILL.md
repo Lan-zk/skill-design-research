@@ -117,6 +117,7 @@ This is a hard constraint on every artifact this skill produces, and a primary r
 - **解释机制要落到"它具体在干嘛、为什么这么干"**，而不是"它体现了 X 思想"。
 - **及格线**：一个不熟悉 skill / agent 领域的人能读懂这段在说什么。
 - 中文产出为主；专有名词保留英文原词并括注解释。
+- **每条“启示 / 共性模式”必须带适用条件**：提炼通用模式时，必须同时写 when-to-apply（什么时候该用）和 when-not-to-apply（什么时候不该用）。不带适用条件的“通用规则”会变成假通用——history-docs 的教训：把 spec 的“500 行建议”升级成“超 200 行反模式”强制检查项。提模式不提具体代码，并标注适用 / 不适用场景。
 
 ## Rules
 
@@ -126,6 +127,7 @@ This is a hard constraint on every artifact this skill produces, and a primary r
 - The `skill-analyzer` subagent collects raw material; the `skill-critic` subagent reviews. The main agent writes and revises.
 - Don't fabricate. If a repo has no `SKILL.md` or no README, say so explicitly.
 - `design-docs/` subdirectory convention: `summaries/` (per-repo deep research), `comparisons/` (cross-repo synthesis), `methods/` (methodology notes if needed).
+- **提炼出的共性模式应追加到 `design-docs/pattern-library.json`**（受 `skills/bggg-skills/bggg-skill-taotie` 启发的跨仓库累积模式库；每条带 `source_skills` / `when_to_apply` / `when_not_to_apply` / `evidence`）。单仓库研究产出 `summaries/`，跨仓库综合产出 `comparisons/`，可复用模式沉淀进 `pattern-library.json`——三者分工，让研究越做越准而非一堆散文档。
 
 ## 派发技巧
 

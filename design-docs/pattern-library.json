@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "version": "0.1",
+    "description": "跨仓库技能设计模式库——从工作区 skills/ 下研究的技能仓库中提炼的可复用模式。受 bggg-skill-taotie（饕餮）的 pattern-library 启发，但用于研究沉淀而非运行时注入。每条模式带 source_skills / when_to_apply / when_not_to_apply，避免退化成空话通用规则（history-docs 假通用的教训：不带适用条件的'规则'会误导）。",
+    "total_patterns": 20,
+    "last_updated": "2026-07-03",
+    "schema_notes": "category 取值: trigger(触发面) / disclosure(渐进式披露) / enforcement(可靠性·约束执行) / distribution(跨平台分发) / organization(技能组织·路由) / philosophy(设计哲学·第一性原理) / evaluation(评估·测试)。evidence 指向 design-docs/ 下的研究文档。新增模式时 id 递增。"
+  },
+  "patterns": [
+    {
+      "id": "p001",
+      "name": "强制引导 bootstrap",
+      "category": "organization",
+      "source_skills": ["superpowers/using-superpowers"],
+      "description": "靠 session-start hook 或 @import 在会话开始强制加载一个引导技能，由它负责在对的时候调对技能，而不是把技能扔在那儿等模型想起来用。",
+      "when_to_apply": "harness 支持 SessionStart hook 或 @-import 语法；技能不会被主动使用除非强制；技能数较多需要统一入口。",
+      "when_not_to_apply": "harness 无 hook 机制（退回强势 description）；单技能仓库（无需引导）；用户明确不想被流程打扰。",
+      "evidence": "design-docs/summaries/superpowers-deep-research.md"
+    },
+    {
+      "id": "p002",
+      "name": "路由器/元技能入口",
+      "category": "organization",
+      "source_skills": ["superpowers/using-superpowers", "mattpocock/ask-matt", "gstack (root SKILL.md)", "ui-ux-pro-max/design", "slavingia/minimalist-review", "anthropic-skills/skill-creator"],
+      "description": "技能数增长后，加一个入口技能负责分发（路由器范式）或兜底（checklist 范式）。三种形态：路由器分发到子技能 / checklist 自己套原则不分发 / 引导只逼检查不分发。",
+      "when_to_apply": "顶层技能数 ≥ 5-7，用户/模型难以直接选对；技能间有天然顺序或子领域划分。",
+      "when_not_to_apply": "1-2 个技能（直接暴露即可）；技能间完全无关（路由器无意义）。",
+      "evidence": "design-docs/comparisons/2026-07-03-all-skills-synthesis.md (共性模式 #2)"
+    },
+    {
+      "id": "p003",
+      "name": "调用轴划分（user-only vs model-invoked）",
+      "category": "trigger",
+      "source_skills": ["mattpocock (disable-model-invocation)", "impeccable (user-invocable)"],
+      "description": "用 disable-model-invocation 把只该人手动调的技能划出（省 context load），模型自动触发的技能保留触发关键词（付 context load 换自动触发）。两种技能的 description 风格刻意分化：人看的无触发词，模型看的有触发词。",
+      "when_to_apply": "有些技能绝不该被模型自动触发（避免误触发/省 context）；harness 支持 disable-model-invocation 字段。",
+      "when_not_to_apply": "harness 不支持该字段（划分失效）；所有技能都该自动触发。",
+      "evidence": "design-docs/summaries/mattpocock-skills-deep-research.md"
+    },
+    {
+      "id": "p004",
+      "name": "强势 description 对抗未充分触发",
+      "category": "trigger",
+      "source_skills": ["anthropic-skills/skill-creator", "impeccable", "gsap-skills", "ui-ux-pro-max"],
+      "description": "模型有'未充分触发'倾向（明明有技能可用却不用）。description 不能只写'是干嘛的'，要嵌入关键词列表 + 何时用 + 何时不用，主动列举触发场景逼模型在边界情况也能命中。",
+      "when_to_apply": "依赖模型自动触发（非 user-invocable-only）；触发条件容易和别的技能/工具重叠。",
+      "when_not_to_apply": "user-invocable-only 技能（人手动调，不需要触发词）；触发条件独一无二不会漏。",
+      "evidence": "design-docs/summaries/anthropic-skills-deep-research.md"
+    },
+    {
+      "id": "p005",
+      "name": "负面边界明确（何时不用）",
+      "category": "trigger",
+      "source_skills": ["obsidian-skills/defuddle", "ljg-skills (NOT FOR)", "anthropic-skills (Do NOT use for)", "impeccable (Not for)"],
+      "description": "触发条件和别的技能/工具重叠时，必须写清'何时不用'。NOT FOR / Do NOT use for / Not for 是跨仓库共识——划负面边界和划正面触发面同等重要。",
+      "when_to_apply": "触发条件与另一个技能或原生工具重叠（如 defuddle vs WebFetch 都处理 URL）。",
+      "when_not_to_apply": "触发条件独一无二，无重叠风险。",
+      "evidence": "design-docs/comparisons/2026-07-03-all-skills-synthesis.md (共性模式 #5)"
+    },
+    {
+      "id": "p006",
+      "name": "确定性规则机械拦截 AI 通病",
+      "category": "enforcement",
+      "source_skills": ["impeccable (44 条规则)", "guizang-ppt-skill (validate-swiss-deck.mjs)"],
+      "description": "AI 通病（紫蓝渐变、Inter 字体、版式乱）可枚举可机械检测时，用代码规则/验证器硬拦，不靠模型自觉。impeccable 44 条可不带 LLM 跑；guizang 用 Node 脚本拒绝实验性版式。把'建议'升级成'可执行校验'。",
+      "when_to_apply": "失败模式是'模型知道但控制不住手'；失败信号可代码检测（对比度/字体/版式/过时 API）；失败成本高。",
+      "when_not_to_apply": "失败是主观品味问题（'布局太居中'无确定信号）；失败是知识缺失（该用教育而非拦截）。",
+      "evidence": "design-docs/summaries/impeccable-deep-research.md, design-docs/summaries/guizang-ppt-skill-deep-research.md"
+    },
+    {
+      "id": "p007",
+      "name": "约束式 prompt（规定不能怎么写）",
+      "category": "enforcement",
+      "source_skills": ["ljg-skills (红线列表)", "andrej-karpathy-skills (四原则)"],
+      "description": "输出上限靠放开、下限靠锁死——规定不能怎么写（红线），不规定必须怎么写。挡住 AI 腔和陈词滥调（下限），给模型留风格空间（上限）。红线带编号 + 顺序即优先级。",
+      "when_to_apply": "要强个人风格 + 反 AI 腔；领域是写作/判断（非客观正确）；模型有一定创造力能在红线内发挥。",
+      "when_not_to_apply": "需要客观正确性（技术文档、API 规范）；模型创造力弱（约束式会让它'不知道写啥'，处方式 prompt 更友好）。",
+      "evidence": "design-docs/summaries/ljg-skills-deep-research.md"
+    },
+    {
+      "id": "p008",
+      "name": "知识形态决定披露策略",
+      "category": "disclosure",
+      "source_skills": ["ui-ux-pro-max (CSV+BM25)", "slavingia (单文件 prose)", "impeccable (规则+脚本)", "obsidian-skills (规范镜像)"],
+      "description": "结构化可枚举知识 → 数据库+检索（ui-ux-pro-max）；成型稳定散文知识 → 单文件自包含（slavingia）；可检测通病 → 规则引擎（impeccable）；权威规范 → 镜像进技能（obsidian）。硬给散文塞数据库是过度工程，硬给结构化数据写长 prompt 是不可维护。",
+      "when_to_apply": "选披露策略时先问：知识能表格化吗？是稳定规则还是易变数据？需要脚本执行吗？",
+      "when_not_to_apply": "不要一刀切'全内联'或'全引用'——按内容性质分层。",
+      "evidence": "design-docs/comparisons/2026-07-03-all-skills-synthesis.md (本质分歧 #2)"
+    },
+    {
+      "id": "p009",
+      "name": "重复三次的活固化成脚本/数据",
+      "category": "disclosure",
+      "source_skills": ["anthropic-skills (skill-creator 原则; docx/pptx/xlsx 共享 office/ 流水线)", "gstack/make-pdf (13 TS 文件 CLI)", "impeccable (detector 规则引擎)", "ui-ux-pro-max (15 CSV)"],
+      "description": "同一逻辑在多个测试用例/技能里被反复手写时，写一次固化成脚本或数据文件放进 scripts/data。这是跨仓库共识——重复劳动是信号。",
+      "when_to_apply": "agent 跨运行/跨技能反复发明同一逻辑（建图、解析、校验、检索）。",
+      "when_not_to_apply": "一次性逻辑（固化成本 > 收益）；逻辑因场景而异无法抽象。",
+      "evidence": "design-docs/comparisons/2026-07-03-all-skills-synthesis.md (共性模式 #6)"
+    },
+    {
+      "id": "p010",
+      "name": "人格扮演统一声音",
+      "category": "philosophy",
+      "source_skills": ["slavingia-skills (channeling... by Sahil Lavingia)"],
+      "description": "技能开头让 agent 扮演作者/'channeling' 某套方法论，让输出有连贯声音，比纯指令更'像作者'。适合方法论/顾问型技能。",
+      "when_to_apply": "技能是成书方法论的交付（书/教程/哲学）；想要连贯声音而非工具输出。",
+      "when_not_to_apply": "工具型技能（无需人格）；客观正确性优先的领域（人格会引入偏见）。",
+      "evidence": "design-docs/summaries/slavingia-skills-deep-research.md"
+    },
+    {
+      "id": "p011",
+      "name": "跨平台分发靠模板生成",
+      "category": "distribution",
+      "source_skills": ["ui-ux-pro-max (18 平台 JSON + 模板引擎)", "impeccable (13 镜像 + 占位符替换)", "gstack (hosts/ TS + setup --host)"],
+      "description": "当平台数多且格式差异结构化时，单源 + 平台配置 + 模板引擎/占位符替换优于手写每份。平台少则手写或单一 CLAUDE.md。",
+      "when_to_apply": "目标平台 ≥ 5 个且格式差异可结构化（每个平台一个 JSON 配置）。",
+      "when_not_to_apply": "平台少（手写更省）；格式差异非结构化（模板引擎表达不了）；单一渠道（零拷贝最稳）。",
+      "evidence": "design-docs/comparisons/2026-07-03-all-skills-synthesis.md (本质分歧 #4)"
+    },
+    {
+      "id": "p012",
+      "name": "单源 + 镜像的同步流程是固有脆弱点",
+      "category": "distribution",
+      "source_skills": ["ui-ux-pro-max (16 vs 22 stacks 漂移; docs/brand-guidelines.md 缺失)", "impeccable (CI 同步 13 份镜像)"],
+      "description": "无论模板生成还是手写镜像，只要有多份拷贝，sync 流程就是脆弱点。ui-ux-pro-max 已多处漂移，impeccable 靠 CI 兜住。零拷贝（slavingia 10 个 SKILL.md 即源）最稳但锁死单一平台。",
+      "when_to_apply": "采用多拷贝分发时——必须配 CI/sync 校验，否则漂移不可避免。",
+      "when_not_to_apply": "零拷贝分发（无同步问题）；单平台。",
+      "evidence": "design-docs/comparisons/2026-07-03-all-skills-synthesis.md (启示 #4)"
+    },
+    {
+      "id": "p013",
+      "name": "规范极简主义（when in doubt, leave it out）",
+      "category": "philosophy",
+      "source_skills": ["agentskills (spec 6 字段; CONTRIBUTING high bar for additions)"],
+      "description": "写标准/规范时只规定跨实现的最小契约，扩展塞 metadata。每加一条规范所有实现方都得理解和支持，移除比新增难——高门槛新增，不确定就不加。",
+      "when_to_apply": "写开放标准/规范（不是写产品技能）。",
+      "when_not_to_apply": "写产品技能（可以也该在 top-level 加 provider 扩展满足特定行为）；写内部团队规范（可更严格）。",
+      "evidence": "design-docs/summaries/agentskills-deep-research.md"
+    },
+    {
+      "id": "p014",
+      "name": "格式 vs 质量分层（机器验硬约束，人读软约束）",
+      "category": "philosophy",
+      "source_skills": ["agentskills (validator 验格式; best-practices 指南管质量)"],
+      "description": "硬约束（格式：字段名/字符规则/长度）机器验，软约束（质量：description 写得好不好/行数建议）人读指南。不混在一起——validator 不查行数，best-practices 才说'考虑拆'。",
+      "when_to_apply": "设计标准或评估体系时——区分'可机器校验'与'需人判断'。",
+      "when_not_to_apply": "产品技能可以也该用 CI/规则引擎强制质量（如 gstack/impeccable）——此时质量也机器验。",
+      "evidence": "design-docs/summaries/agentskills-deep-research.md"
+    },
+    {
+      "id": "p015",
+      "name": "技能 TDD（失败测试先行）",
+      "category": "evaluation",
+      "source_skills": ["superpowers (NO SKILL WITHOUT A FAILING TEST FIRST; systematic-debugging test-pressure 文件)", "anthropic-skills/skill-creator (with-skill vs without-skill baseline)"],
+      "description": "把技能当代码——先写 agent 会失败场景的测试（压力测试文件/基线对比），再写技能让它通过。带压力测试基线，技能质量可验证不是拍脑袋。",
+      "when_to_apply": "技能质量必须可验证（生产级/反复用）；有精力建测试基线。",
+      "when_not_to_apply": "一次性/探索性技能（测试成本 > 收益）；技能输出高度主观难以建断言。",
+      "evidence": "design-docs/summaries/superpowers-deep-research.md, design-docs/summaries/anthropic-skills-deep-research.md"
+    },
+    {
+      "id": "p016",
+      "name": "强约束 + 唯一创意通道",
+      "category": "enforcement",
+      "source_skills": ["ian-xiaohei-illustrations"],
+      "description": "把能锁死的全锁死（风格/IP/构图/颜色），只留'为当前文章重新发明隐喻'这一个创造性变量给模型。不是不给自由，是把自由收窄到一个维度，让模型在该维度做到极致，同时堵死所有 AI 味逃逸路径。",
+      "when_to_apply": "生成任务有明确的'AI 味失败模式' + 创造性可以收窄到一个维度（如隐喻发明、构图选择）；约束可被生成模型遵循。",
+      "when_not_to_apply": "任务需要多维度创意（开放式设计探索）；约束会扼杀核心价值；生成模型遵循能力弱（约束被忽略）。",
+      "evidence": "design-docs/summaries/ian-xiaohei-illustrations-deep-research.md"
+    },
+    {
+      "id": "p017",
+      "name": "删除实验作可测试判断标准",
+      "category": "evaluation",
+      "source_skills": ["ian-xiaohei-illustrations (xiaohei-ip 去掉小黑→太装饰)", "superpowers (删除 SKILL.md 仅跑 scripts→推理下沉)"],
+      "description": "把'X 是否承担核心作用'这个主观判断变成可判定信号——'去掉 X，结果还成立→X 太装饰/是死重，要重做'。用删除实验检验依赖，把主观质量判断转成可执行检验。",
+      "when_to_apply": "设计里有'X 必须承担核心作用'的要求（IP/字段/步骤/约束），需要可判定的质量信号；主观质量难以直接度量。",
+      "when_not_to_apply": "质量多维主观、无单一可检验核心依赖；X 与结果耦合复杂无法靠删除判定。",
+      "evidence": "design-docs/summaries/ian-xiaohei-illustrations-deep-research.md, design-docs/summaries/superpowers-deep-research.md"
+    },
+    {
+      "id": "p018",
+      "name": "显式禁止复刻（列旧模式逼重新发明）",
+      "category": "prompt",
+      "source_skills": ["ian-xiaohei-illustrations (反复刻规则列 9 个禁止复用旧构图)"],
+      "description": "示例驱动的技能里模型会偷懒复刻示例而非重新生成。显式列出禁止复用的旧构图/旧模式（具体到名字），逼模型每次从当前输入重新发明。示例只作风格校准，不进默认生成路径。",
+      "when_to_apply": "示例驱动的生成技能（模型容易抄示例构图/物件/措辞）；任务要求每次产出有新意。",
+      "when_not_to_apply": "任务有标准答案该复用（模板填充）；重新发明反而是错。",
+      "evidence": "design-docs/summaries/ian-xiaohei-illustrations-deep-research.md"
+    },
+    {
+      "id": "p019",
+      "name": "约束固化进填空模板",
+      "category": "prompt",
+      "source_skills": ["ian-xiaohei-illustrations (prompt-template)"],
+      "description": "把约束写死、把创造性变量留空——模型只填'主题/核心意思/构图'等易变部分，不碰'风格/颜色/比例'等稳定约束。约束 vs 创意的工程化分离，模板分段承担不同职责。",
+      "when_to_apply": "约束固定 + 内容多变的生成任务（每篇文章不同但风格统一）；约束可一次性固化。",
+      "when_not_to_apply": "约束本身因场景而异（该用条件分支而非固定模板）；任务无稳定约束可固化。",
+      "evidence": "design-docs/summaries/ian-xiaohei-illustrations-deep-research.md"
+    },
+    {
+      "id": "p020",
+      "name": "QA checklist 作 prompt 版验证器（主观领域）",
+      "category": "enforcement",
+      "source_skills": ["ian-xiaohei-illustrations (qa-checklist 12 必过+10 失败信号+6 迭代修复)", "guizang-ppt-skill (checklist.md P0-P3 分级)"],
+      "description": "失败模式可枚举但不可代码检测的领域（图像风格/气质/怪诞感），用 checklist + 失败信号 + 迭代修复方法做验收闭环。是 p006（确定性规则机械拦截）的 prompt 对应物——p006 用代码拦客观点，本模式用 checklist 拦主观点。代价是验收不如代码硬，靠模型自觉跑。",
+      "when_to_apply": "失败可枚举但不可代码检测（主观品味/风格气质/怪诞感/留白比例的视觉判断）；无法写验证器脚本。",
+      "when_not_to_apply": "失败可代码检测时直接用脚本验证器（p006 模式更硬更可靠）。",
+      "evidence": "design-docs/summaries/ian-xiaohei-illustrations-deep-research.md, design-docs/summaries/guizang-ppt-skill-deep-research.md"
+    }
+  ]
+}

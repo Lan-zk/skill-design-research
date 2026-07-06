@@ -34,6 +34,36 @@ Collect these so the writer can reason about *why* the repo is designed this way
 - **Progressive-disclosure usage pattern**: are SKILL.md files small-with-refs or large-self-contained? Roughly how big, and do many reference bundled `references/`?
 - **Anything the author explicitly says about their philosophy** (in README, comments, integration files) — quote it.
 
+### Layer 3 — Design-dimension checklist (representative skills only)
+
+Inspired by 饕餮's 4-layer × 6-dimension reverse-engineering framework (`skills/bggg-skills/bggg-skill-taotie/references/analysis-guide.md`). Collect **observations with evidence, not judgments** — the writer compares across repos. Pick 1-3 representative skills (the ones that best embody the repo's philosophy; skip entirely if the repo has no skills worth a deep-dive, e.g. the `agentskills` spec repo). For each, observe across four layers:
+
+**指令层 (the SKILL.md itself)**
+- 触发描述质量: does `description` cover what + when + keywords? (quote already in Layer 1; here note which of the three it covers)
+- 指令清晰度: core instructions explicit, or ambiguous/contradictory? cite `file:line` if ambiguous
+- Few-shot: worked examples present? cover edge cases?
+- 输出约束: output format defined (JSON Schema / template / prose)?
+- 错误指引: error/exception behavior defined?
+
+**工具层 (scripts/ and bundled executables)**
+- 工具覆盖度: what scripts exist? overlapping or complementary?
+- 实现质量: error handling present? parallelism/caching? (read code, don't run)
+- 可复用性: generic tools or tightly coupled to one skill?
+
+**策略层 (prompt-engineering choices inside SKILL.md)**
+- 推理策略: CoT / step-by-step / self-correction?
+- 角色设定: expert role assigned? (e.g. "你是 X 专家")
+- 约束表达: constraints explained with "why" or bare MUST/NEVER? (**key axis** — quote 1-2 examples, this feeds the first-principles analysis)
+- 上下文管理: long content chunked? progressive disclosure used?
+
+**性能层 (statically inferable only — mark "需运行" for what needs runtime)**
+- 速度迹象: parallel/caching design present? (actual speed needs running)
+- 准确度迹象: few-shot / secondary validation / schema constraint?
+- 鲁棒性迹象: retry / fallback / exception handling?
+- 资源消耗迹象: SKILL.md size, references count
+
+For each observation, cite `file:line`. If a dimension is empty (e.g. no scripts), say "none" — don't fabricate.
+
 ## Output format
 
 Return a single Markdown document:
@@ -66,6 +96,13 @@ Return a single Markdown document:
 - **Layout**: …
 - **SKILL.md size**: … lines
 - **Notes**: …
+
+## Design-dimension checklist (representative skills only)
+### <repo>/<skill-name>
+- **指令层**: …
+- **工具层**: …
+- **策略层**: … (quote the 约束表达 example here — it's high-value for the writer)
+- **性能层**: …
 ```
 
 ## Hard rules
